@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="PhotoChooser:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PhotoChooser_jar</output-path>
+    <root id="archive" name="PhotoChooser.jar">
+      <element id="module-output" name="PhotoChooser" />
+    </root>
+  </artifact>
+</component>
