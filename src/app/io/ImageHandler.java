@@ -16,6 +16,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
     private final ImagePathList mFilesToDelete = new ImagePathList(),
             mFilesToKeep = new ImagePathList();
     private Iterator<Path> mFilePathsIterator;
+    private int mRemaining;
     private Path mRootPath, mLoadedImagePath;
     private volatile Icon mLoadedImage;
     private volatile boolean mFinishedLoading = true, mClosed = false;
@@ -171,9 +172,14 @@ public class ImageHandler implements AutoCloseable, Closeable {
         return this;
     }
 
-    public ImageHandler setIterator(Iterator<Path> iterator) {
-        mFilePathsIterator = iterator;
+    public ImageHandler setFiles(java.util.List<Path> list) {
+        mFilePathsIterator = list.iterator();
         preloadImage();
+        mRemaining = list.size();
         return this;
+    }
+
+    public int getRemaining() {
+        return mRemaining;
     }
 }

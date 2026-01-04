@@ -1,7 +1,6 @@
 package app.main;
 
-import app.io.FileLoader;
-import app.io.ImageHandler;
+import app.io.*;
 import app.ui.AbstractScreen;
 import app.ui.VerticalFlowLayout;
 import app.util.AlreadyInitializedException;
@@ -30,27 +29,25 @@ public class Gui extends AbstractScreen {
         FileLoader.instance.getDirectory(f -> fromDirectory(f.getAbsolutePath()));
     }
 
-    private final String mPath;
-
     private final ImageHandler mImageHandler = new ImageHandler();
     // gui
     private final JLabel mLabel = new JLabel(),
             mCountLabel=new JLabel();
     private final JButton mKeepButton = new JButton("Keep"),
             mDeleteButton = new JButton("Delete"),
-            mSettingsButton = new JButton("Settings"),
+            //mSettingsButton = new JButton("Settings"),
             mExitButton = new JButton("Exit");
+    private final JCheckBox mChoiceCheckBox = new JCheckBox("Show Remaining Files");
     private ImageHandler.ImageData mImageData;
     private int mCount = 0;
 
     private Gui(String pathStr) {
-        mPath = pathStr;
         initSwing();
         IO.println("Working with images at "+pathStr);
         Path p = Paths.get(pathStr);
         var images = new ImagePathList();
         FileLoader.instance.loadFiles(p, images);
-        mImageHandler.setIterator(images.iterator())
+        mImageHandler.setFiles(images)
                 .setRootPath(p)
                 .setImagesWidth(AbstractScreen.sSize.width-200);
         nextImage();
@@ -63,14 +60,33 @@ public class Gui extends AbstractScreen {
 
     @Override
     protected Image icon() {
-        return Utils.loadImage("/app_icon.png");
+        return Utils.loadImage("/res/app_icon.png");
+    }
+
+    private void styleComponents(JComponent... jcs) {
+        try {
+            // noinspection all
+            Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/res/ibmplexsans_bold.ttf"));
+            for (JComponent jc : jcs) {
+                jc.setFont(font.deriveFont(17f));
+                jc.setPreferredSize(new Dimension(180, 30));
+                jc.setFocusable(false);
+            }
+        } catch (FontFormatException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void initSwing() {
-        // set layout
         setLayout(new FlowLayout());
-        Component[] comps = {mKeepButton, mDeleteButton, mExitButton, mSettingsButton, mCountLabel};
-        add(Utils.createPanel(new VerticalFlowLayout(10, 10), comps));
+        setBackground(Color.DARK_GRAY);
+
+        JComponent[] comps = {mKeepButton, mDeleteButton, mExitButton, mCountLabel, mChoiceCheckBox};
+        mCountLabel.setForeground(Color.WHITE);
+        styleComponents(comps);
+        JPanel panel = Utils.createPanel(new VerticalFlowLayout(10, 10), comps);
+        panel.setBackground(Color.DARK_GRAY);
+        add(panel);
         add(mLabel);
 
         mDeleteButton.addActionListener(createDeleteListener());
@@ -78,7 +94,17 @@ public class Gui extends AbstractScreen {
         mKeepButton.addActionListener(createKeepListener());
         mKeepButton.setFocusable(false);
         mExitButton.addActionListener(createExitListener(getFrame()));
-        mSettingsButton.addActionListener(createSettingListener());
+
+        mChoiceCheckBox.addChangeListener(_ -> Configuration.storeProperties(
+                "settings.properties",
+                new OutputProperties().put("showRemaining", mChoiceCheckBox.isSelected())
+        ));
+
+        InputProperties properties = new InputProperties();
+        Configuration.loadProperties("settings.properties", properties);
+        mChoiceCheckBox.setSelected(properties.getBoolean("showRemaining", true));
+        mChoiceCheckBox.setBackground(Color.DARK_GRAY);
+        mChoiceCheckBox.setForeground(Color.WHITE);
 
         setFocusable(true);
         addKeyListener(new ActionKeyListener());
@@ -89,14 +115,19 @@ public class Gui extends AbstractScreen {
 
     private ActionListener createExitListener(final Window window) {
         return _ -> {
-            IO.println("Moving files...");
-            try {
-                mImageHandler.close();
+            InputProperties properties = new InputProperties();
+            Configuration.loadProperties("settings.properties", properties);
+            if(properties.getBoolean("showRemaining", true)) {
                 JOptionPane.showMessageDialog(this, """
                         Images you deleted are not deleted. Just moved into '__trash__' folder.
                         You have to delete this folder yourself.
                         This happens for security reasons.""");
-                JOptionPane.showMessageDialog(this, "Remaining Files: "+Utils.getRemainingFiles(mPath));
+                JOptionPane.showMessageDialog(this, "Remaining Files: "+mImageHandler.getRemaining());
+            }
+
+            IO.println("Moving files...");
+            try {
+                mImageHandler.close();
             } catch (IOException e) {
                 IO.println("[ERROR] Cannot close ImageHandler. "+e);
             }
@@ -117,12 +148,8 @@ public class Gui extends AbstractScreen {
         }
     }
 
-    private ActionListener createSettingListener() {
-        return actionEvent -> Settings.instance.setVisible();
-    }
-
     private ActionListener createKeepListener() {
-        return actionEvent -> {
+        return _ -> {
             IO.println("[DEBUG] Keeping image");
             mImageHandler.keep(mImageData.path());
             nextImage();
@@ -130,7 +157,7 @@ public class Gui extends AbstractScreen {
     }
 
     private ActionListener createDeleteListener() {
-        return actionEvent -> {
+        return _ -> {
             IO.println("[DEBUG] Deleting image");
             mImageHandler.delete(mImageData.path());
             nextImage();

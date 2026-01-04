@@ -7,6 +7,7 @@ import app.util.Utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,6 +111,22 @@ public final class Configuration {
             throw new RuntimeException(e);
         }
         return out;
+    }
+
+    public static void loadProperties(String filePath, InputProperties properties) {
+        try(InputStream inputStream = getConfigInputStream(filePath, true)) {
+            properties.load(inputStream);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public static void storeProperties(String filePath, OutputProperties properties) {
+        try (OutputStream stream = getConfigOutputStream(filePath)) {
+            properties.store(stream);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**

@@ -1,40 +1,52 @@
 package app.io;
 
-import app.util.Utils;
-
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.Properties;
 
-@SuppressWarnings("unused")
 public class OutputProperties {
     private final Properties mProperties = new Properties();
 
     public OutputProperties() {
     }
 
-    public void put(String key, String value) {
-        mProperties.put(key, value);
+    public OutputProperties put(String key, String value) {
+        mProperties.setProperty(Objects.requireNonNull(key), Objects.requireNonNull(value));
+        return this;
     }
 
-    public void put(String key, boolean value) {
-        mProperties.put(key, String.valueOf(value));
+    public OutputProperties put(String key, boolean value) {
+        mProperties.setProperty(key, String.valueOf(value));
+        return this;
     }
 
-    public void put(String key, int value) {
-        mProperties.put(key, String.valueOf(value));
+    public OutputProperties put(String key, int value) {
+        mProperties.setProperty(key, String.valueOf(value));
+        return this;
     }
 
-    public void put(String key, float value) {
-        mProperties.put(key, String.valueOf(value));
+    public OutputProperties put(String key, long value) {
+        mProperties.setProperty(key, String.valueOf(value));
+        return this;
+    }
+
+    public OutputProperties put(String key, float value) {
+        mProperties.setProperty(key, String.valueOf(value));
+        return this;
+    }
+
+    public OutputProperties put(String key, double value) {
+        mProperties.setProperty(key, String.valueOf(value));
+        return this;
     }
 
     public void store(OutputStream outputStream) {
         try {
             mProperties.store(outputStream, "Updated Settings");
         } catch (IOException e) {
-            Utils.showException(e);
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 }

@@ -17,14 +17,11 @@ import java.util.stream.Stream;
 
 public final class Utils {
     private static BufferedImage sCannotLoadImage;
-    private static boolean sEnableSFX;
 
     public static void init() {
         try (InputStream resourceStream = Utils.class.getResourceAsStream("cannotloadimage.png");
             InputStream configurationStream = Configuration.getConfigInputStream("settings.properties", true)) {
             if(resourceStream==null) throw new NullPointerException("Goto catch");
-            InputProperties inputProperties = new InputProperties(configurationStream);
-            sEnableSFX = inputProperties.getBoolean("enable_sfx", true);
             sCannotLoadImage = ImageIO.read(resourceStream);
         } catch (IOException | NullPointerException e) {
             showException(e);
@@ -70,16 +67,6 @@ public final class Utils {
             panel.add(component);
         }
         return panel;
-    }
-
-    @Deprecated
-    public static JFrame startOnFrame(JPanel gui, String title) {
-        JFrame frame = new JFrame(title);
-        frame.setContentPane(gui);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-        return frame;
     }
 
     public static long getRemainingFiles(String path) {

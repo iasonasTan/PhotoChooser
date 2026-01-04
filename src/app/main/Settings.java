@@ -12,12 +12,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
+@SuppressWarnings("all")
+@Deprecated
 public class Settings extends AbstractScreen {
+    @Deprecated
     public static final Settings instance = new Settings();
-    private final JCheckBox mSFXCheckBox = new JCheckBox("Sound Effects");
     private final JButton mExitButton = new JButton("Save & Exit");
 
     private Settings() {
@@ -26,32 +27,20 @@ public class Settings extends AbstractScreen {
     }
 
     private void loadSettings() {
-        try {
-            InputStream inputStream = Configuration.getConfigInputStream("settings.properties", true);
-            InputProperties properties = new InputProperties(inputStream);
-            inputStream.close();
-            mSFXCheckBox.setSelected(properties.getBoolean("enable_sfx", true));
-        } catch (IOException e) {
-            Utils.showException(e);
-        }
+        InputProperties properties = new InputProperties();
+        Configuration.loadProperties("settings.properties", properties);
     }
 
     private void initSwing() {
-        add(Utils.createPanel(new VerticalFlowLayout(), mSFXCheckBox, mExitButton), new GridBagConstraints());
+        JPanel panel = Utils.createPanel(new VerticalFlowLayout(), mExitButton);
+        add(panel, new GridBagConstraints());
         mExitButton.addActionListener(new ExitListener());
     }
 
     public class ExitListener implements ActionListener {
         @Override public void actionPerformed(ActionEvent actionEvent) {
-            try {
-                OutputProperties properties = new OutputProperties();
-                properties.put("enable_sfx", mSFXCheckBox.isSelected());
-                OutputStream outputStream = Configuration.getConfigOutputStream("settings.properties");
-                properties.store(outputStream);
-                outputStream.close();
-            } catch (IOException e) {
-                Utils.showException(e);
-            }
+            OutputProperties properties = new OutputProperties();
+            Configuration.storeProperties("settings.properties", properties);
             Gui.instance.setVisible();
         }
     }
@@ -63,6 +52,6 @@ public class Settings extends AbstractScreen {
 
     @Override
     protected Image icon() {
-        return Utils.loadImage("/app_icon_settings.png");
+        return Utils.loadImage("/res/app_icon_settings.png");
     }
 }
