@@ -3,6 +3,8 @@
     <output-path>$PROJECT_DIR$/out/artifacts/PhotoChooser_jar</output-path>
     <root id="archive" name="PhotoChooser.jar">
       <element id="module-output" name="PhotoChooser" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../Lib/out/artifacts/Lib_jar/Lib.jar" path-in-jar="/" />
+      <element id="module-source" name="PhotoChooser" />
     </root>
   </artifact>
 </component>

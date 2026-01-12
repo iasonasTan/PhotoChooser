@@ -41,5 +41,4 @@ public final class FileLoader {
         chooser.setDialogTitle("Choose Directory.");
         chooser.showDialog(null, "Select");
     }
-
 }

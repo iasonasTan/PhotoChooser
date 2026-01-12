@@ -1,0 +1,3 @@
+Images you deleted are not deleted. Just moved into '__trash__' folder.
+You have to delete this folder yourself.
+This happens for security reasons.

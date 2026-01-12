@@ -19,10 +19,18 @@ public class ImagePathList extends ArrayList<Path> {
 
     private boolean checkPath(Path path) {
         String fileName = path.getFileName().toString();
-        if(Utils.endsWith(fileName, ".png", ".jpg", ".JPG"))
+        if(endsWith(fileName, ".png", ".jpg", ".JPG"))
             return true;
 
         IO.println("[DEBUG] Rejected item \""+fileName+"\" unrecognizable file extension.");
+        return false;
+    }
+
+    public static boolean endsWith(String string, String... endings) {
+        for (String ending : endings) {
+            if(string.endsWith(ending))
+                return true;
+        }
         return false;
     }
 

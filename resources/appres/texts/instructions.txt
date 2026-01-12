@@ -1,0 +1,30 @@
+How to launch the application:
+    1. You can launch the jar file and then select a directory to clean.
+    2. You can give the directory's path as the first command-line argument when launching the JAR.
+
+How to use the application:
+To delete the current photo you can:
+    1. Press BACKSPACE key.
+    2. Press DEL key.
+    3. Press D key.
+    4. Click 'Delete' button on GUI.
+To keep the current photo you can:
+    1. Press ENTER key.
+    2. Press SPACE key.
+    3. Press K key.
+    4. Click 'Keep' button on GUI.
+To skip the current photo you can:
+    1. Press S key.
+    2. Press SHIFT key.
+    3. Press END key.
+    4. Click 'Skip' button on GUI.
+To exit the application you can:
+    1. Press ESC key.
+    2. Press E key.
+    3. Click 'Exit' button on GUI.
+
+What the application does:
+The application shows the photos that are inside the directory you give it.
+You tell the application which photos to keep and which to delete.
+After you exit, the APPLICATION DOES NOT DELETE ANY FILES, it just moves files to subdirectories.
+You will find files you deleted on subdirectory '__trash__' and files you kept on subdirectory '__keep__'
