@@ -26,18 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class MainScreen extends AbstractScreen {
-    public static final int WINDOW_WIDTH;
-    public static final int WINDOW_HEIGHT;
-
-    static {
-        DisplayMode displayMode = GraphicsEnvironment
-                .getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice()
-                .getDisplayMode();
-        WINDOW_WIDTH  = displayMode.getWidth();
-        WINDOW_HEIGHT = displayMode.getHeight();
-    }
-
     private static MainScreen sInstance = null;
 
     public static MainScreen getInstance() {
@@ -49,7 +37,12 @@ public class MainScreen extends AbstractScreen {
     public static void fromDirectory(String path) {
         if(sInstance != null)
             throw new UtilAlreadyInitializedException();
-        sInstance = new MainScreen(path);
+        DisplayMode displayMode = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice()
+                .getDisplayMode();
+        Dimension screenSize = new Dimension(displayMode.getWidth(), displayMode.getHeight());
+        sInstance = new MainScreen(path, screenSize);
         sInstance.setVisible();
     }
 
@@ -70,7 +63,7 @@ public class MainScreen extends AbstractScreen {
             mSkipButton = new JButton("Skip"),
             mExitButton = new JButton("Exit");
 
-    private MainScreen(String pathStr) {
+    private MainScreen(String pathStr, Dimension screenSize) {
         initSwing();
 
         Path rootPath = Paths.get(pathStr);
@@ -78,7 +71,7 @@ public class MainScreen extends AbstractScreen {
         FileLoader.instance.loadFiles(rootPath, imagesList);
 
         int controlComponentsWidth = 200;
-        int imageSize = Math.min(WINDOW_WIDTH-controlComponentsWidth, WINDOW_HEIGHT);
+        int imageSize = Math.min(screenSize.width-controlComponentsWidth, screenSize.height);
         mImageHandler = ImageHandler.newInstance(rootPath, imagesList, imageSize);
 
         nextImage();

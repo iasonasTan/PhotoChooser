@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ImageHandler implements AutoCloseable, Closeable {
     public static ImageHandler newInstance(Path rootPath, java.util.List<Path> paths) {
@@ -107,7 +108,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
                 out = ImageIO.read(mLoadedImagePath.toUri().toURL());
             } while(out == null);
             return out;
-        } catch (IOException e) {
+        } catch (IOException | NoSuchElementException e) {
             System.err.println("\u001B[31m[ERROR] Something went wrong while trying to load image. "+e.getMessage()+"\u001B[0m");
             UI.showException(e);
             throw new RuntimeException(e);
@@ -115,9 +116,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
     }
 
     private void preloadImage() {
-        if(!mFinishedLoading)
-            return;
-
+        if(!mFinishedLoading) return;
         mFinishedLoading = false;
         new Thread(() -> {
             long startTime = System.currentTimeMillis();
