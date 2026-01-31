@@ -33,7 +33,7 @@ public final class FileMover {
             Files.createDirectory(destination);
         }
         for (Path path : filesToMove) {
-            IO.println("Moving: " + path.toAbsolutePath() + " to " + destination.toAbsolutePath());
+            System.out.println("Moving: " + path.toAbsolutePath() + " to " + destination.toAbsolutePath());
             Path movedFilePath = Paths.get(destination.toAbsolutePath().toString(), path.getFileName().toString());
             Files.move(path, movedFilePath, StandardCopyOption.REPLACE_EXISTING);
         }

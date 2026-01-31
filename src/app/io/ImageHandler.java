@@ -38,7 +38,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
     private volatile boolean mFinishedLoading = true;
 
     private ImageHandler(Path root, List<Path> images, int imageWidth) {
-        IO.println("Working with images at "+ root.toAbsolutePath());
+        System.out.println("Working with images at "+ root.toAbsolutePath());
         mImageScaler.setImageSize(imageWidth);
         mRootPath = root;
         mFilePathsIterator = images.iterator();
@@ -48,7 +48,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
 
     public ImageData nextImageData() {
         try {
-            IO.println("[DEBUG] Returning pre-loaded image.");
+        	System.out.println("[DEBUG] Returning pre-loaded image.");
             long startTime = System.currentTimeMillis();
             final long MAX_LOAD_TIME = 5_000;
             while(true) {
@@ -63,10 +63,10 @@ public class ImageHandler implements AutoCloseable, Closeable {
                 }
             }
         } catch (Exception e) {
-            IO.println("[ERROR] Error while loading image "+e.getMessage());
+        	System.out.println("[ERROR] Error while loading image "+e.getMessage());
             throw new RuntimeException(e);
         } finally {
-            IO.println("[DEBUG] Loading next image...");
+        	System.out.println("[DEBUG] Loading next image...");
             preloadImage();
         }
     }
@@ -87,24 +87,15 @@ public class ImageHandler implements AutoCloseable, Closeable {
 
     private BufferedImage nextImage() {
         if(mFilePathsIterator ==null||!mFilePathsIterator.hasNext()) {
-            IO.println("[DEBUG] No more images.");
+        	System.out.println("[DEBUG] No more images.");
             return null;
         }
         mRemainingPictures--;
-//        if(mRemainingPictures < 1) {
-//            try {
-//                close();
-//            } catch (IOException e) {
-//                // ignore
-//            }
-//            AbstractScreen.dispose();
-//            System.exit(1);
-//        }
         try {
             BufferedImage out;
             do {
                 mLoadedImagePath = mFilePathsIterator.next();
-                IO.println("[DEBUG] Loading file " + mLoadedImagePath.toAbsolutePath());
+                System.out.println("[DEBUG] Loading file " + mLoadedImagePath.toAbsolutePath());
                 out = ImageIO.read(mLoadedImagePath.toUri().toURL());
             } while(out == null);
             return out;
@@ -120,14 +111,14 @@ public class ImageHandler implements AutoCloseable, Closeable {
         mFinishedLoading = false;
         new Thread(() -> {
             long startTime = System.currentTimeMillis();
-            IO.println("[DEBUG] Loading and scaling started at "+startTime);
+            System.out.println("[DEBUG] Loading and scaling started at "+startTime);
 
             BufferedImage image = nextImage();
             mLoadedImage = mImageScaler.scaleImage(image);
 
             long endTime = System.currentTimeMillis();
             long delta = endTime - startTime;
-            IO.println("[DEBUG] Image is loaded and scaled. (took "+delta+" millis)");
+            System.out.println("[DEBUG] Image is loaded and scaled. (took "+delta+" millis)");
             mFinishedLoading = true;
         }).start();
     }

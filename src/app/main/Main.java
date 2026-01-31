@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         Configuration.init("photo_chooser");
         UI.init();
-        Resources.init();
+        Resources.init(Main.class);
         SettingsScreen.init();
 
         if(args.length == 0)

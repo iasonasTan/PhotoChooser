@@ -1,9 +1,9 @@
 font_family=/appres/fonts/ibmplexsans_bold.ttf
 font_size=17
 
-background=90,90,90
-foreground=255,255,255
-
 focusable=false
 size=180x30
 alignment=left
+
+background=90,90,90
+foreground=255,255,255

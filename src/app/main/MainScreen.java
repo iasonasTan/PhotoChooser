@@ -1,10 +1,30 @@
 package app.main;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
 import app.io.FileLoader;
 import app.io.ImageHandler;
 import app.util.ImagePathList;
-import lib.UtilAlreadyInitializedException;
-import lib.UtilNotInitializedException;
+import lib.AlreadyInitializedException;
+import lib.NotInitializedException;
 import lib.gui.AbstractScreen;
 import lib.gui.layout.VerticalFlowLayout;
 import lib.gui.style.SimpleStyleLoader;
@@ -15,35 +35,25 @@ import lib.io.Configuration;
 import lib.io.InputProperties;
 import lib.io.Resources;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 public class MainScreen extends AbstractScreen {
     private static MainScreen sInstance = null;
 
     public static MainScreen getInstance() {
         if(sInstance==null)
-            throw new UtilNotInitializedException();
+            throw new NotInitializedException();
         return sInstance;
     }
 
     public static void fromDirectory(String path) {
         if(sInstance != null)
-            throw new UtilAlreadyInitializedException();
+            throw new AlreadyInitializedException();
         DisplayMode displayMode = GraphicsEnvironment
                 .getLocalGraphicsEnvironment()
                 .getDefaultScreenDevice()
                 .getDisplayMode();
         Dimension screenSize = new Dimension(displayMode.getWidth(), displayMode.getHeight());
         sInstance = new MainScreen(path, screenSize);
-        sInstance.setVisible();
+        sInstance.visible(true);
     }
 
     public static void fromChooser() {
@@ -169,7 +179,7 @@ public class MainScreen extends AbstractScreen {
 
     private static class ShowSettingsListener implements ActionListener {
         @Override public void actionPerformed(ActionEvent actionEvent) {
-            SettingsScreen.getInstance().setVisible();
+            SettingsScreen.getInstance().visible(true);
         }
     }
 

@@ -1,6 +1,6 @@
 package app.main;
 
-import lib.UtilAlreadyInitializedException;
+import lib.AlreadyInitializedException;
 import lib.gui.AbstractScreen;
 import lib.gui.UI;
 import lib.gui.layout.VerticalFlowLayout;
@@ -24,14 +24,13 @@ public class SettingsScreen extends AbstractScreen {
 
     public static void init() {
         if(sInstance !=null)
-            throw new UtilAlreadyInitializedException();
+            throw new AlreadyInitializedException();
         sInstance = new SettingsScreen();
     }
 
     private final JButton mExitButton;
-    private final JCheckBox mNativeFullscreenCheckBox;
+    private final JCheckBox mNativeFullscreenCheckBox, mShowRemainingCheckBox, mNightThemeCheckBox;
     private final JTextArea mInstructionsTextArea;
-    private final JCheckBox mShowRemainingCheckBox;
 
     /* Initialize GUI components */
     {
@@ -42,6 +41,7 @@ public class SettingsScreen extends AbstractScreen {
         mNativeFullscreenCheckBox = factory.newComponent(JCheckBox.class, "Native Fullscreen");
         mInstructionsTextArea = factory.newComponent(JTextArea.class, Resources.loadText("/appres/texts/instructions.txt"));
         mShowRemainingCheckBox = factory.newComponent(JCheckBox.class, "Show Remaining Files");
+        mNightThemeCheckBox = factory.newComponent(JCheckBox.class, "Use night theme");
     }
 
     private SettingsScreen() {
@@ -98,7 +98,7 @@ public class SettingsScreen extends AbstractScreen {
             properties.put("native_fullscreen", mNativeFullscreenCheckBox.isSelected());
             properties.put("show_remaining", mShowRemainingCheckBox.isSelected());
             Configuration.storeProperties("settings.properties", properties);
-            MainScreen.getInstance().setVisible();
+            MainScreen.getInstance().visible(true);
         }
     }
 }

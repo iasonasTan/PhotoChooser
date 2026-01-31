@@ -22,7 +22,7 @@ public class ImagePathList extends ArrayList<Path> {
         if(endsWith(fileName, ".png", ".jpg", ".JPG"))
             return true;
 
-        IO.println("[DEBUG] Rejected item \""+fileName+"\" unrecognizable file extension.");
+        System.out.println("[DEBUG] Rejected item \""+fileName+"\" unrecognizable file extension.");
         return false;
     }
 
