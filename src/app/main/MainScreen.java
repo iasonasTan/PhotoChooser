@@ -143,7 +143,7 @@ public class MainScreen extends AbstractScreen {
         } else {
             mCount++;
             mCountLabel.setText("Shown Images: "+mCount);
-            System.out.println(String.valueOf(mImageData.image()==null).toUpperCase()+ mImageData.path());
+            System.out.printf("%s exists: %B\n", mImageData.path(), mImageData.image()==null);
             mLabel.setIcon(mImageData.image());
         }
     }
@@ -185,18 +185,19 @@ public class MainScreen extends AbstractScreen {
 
     private class ExitListener implements ActionListener {
         @Override public void actionPerformed(ActionEvent actionEvent) {
-            InputProperties properties = Configuration.loadProperties("settings.properties");
-            if(properties.getBoolean("showRemaining", true)) {
-                JOptionPane.showMessageDialog(MainScreen.this, Resources.loadText("/appres/texts/exit_message.txt"));
-                JOptionPane.showMessageDialog(MainScreen.this, "Remaining Files: "+mImageHandler.getRemaining());
-            }
             IO.println("Moving files...");
             try {
                 mImageHandler.close();
             } catch (IOException e) {
-                IO.println("[ERROR] Cannot close ImageHandler. "+e);
+                IO.println("[ERROR] Failed to close ImageHandler "+e);
             }
+            IO.println("All files are moved.");
             AbstractScreen.dispose();
+            if(Configuration.loadProperties("settings.properties").getBoolean("showRemaining", true)) {
+                JOptionPane.showMessageDialog(MainScreen.this, Resources.loadText("/appres/texts/exit_message.txt"));
+                JOptionPane.showMessageDialog(MainScreen.this, "Remaining Files: "+mImageHandler.getRemaining());
+            }
+            System.exit(0);
         }
     }
 

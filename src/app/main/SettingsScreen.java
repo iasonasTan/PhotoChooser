@@ -2,7 +2,6 @@ package app.main;
 
 import lib.AlreadyInitializedException;
 import lib.gui.AbstractScreen;
-import lib.gui.UI;
 import lib.gui.layout.VerticalFlowLayout;
 import lib.gui.style.*;
 import lib.io.Configuration;
@@ -12,8 +11,6 @@ import lib.io.Resources;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SettingsScreen extends AbstractScreen {
     private static SettingsScreen sInstance;
@@ -29,7 +26,7 @@ public class SettingsScreen extends AbstractScreen {
     }
 
     private final JButton mExitButton;
-    private final JCheckBox mNativeFullscreenCheckBox, mShowRemainingCheckBox, mNightThemeCheckBox;
+    private final JCheckBox mNativeFullscreenCheckBox, mShowRemainingCheckBox, mNightThemeCheckBox, mRandomOrderCheckbox;
     private final JTextArea mInstructionsTextArea;
 
     /* Initialize GUI components */
@@ -42,6 +39,7 @@ public class SettingsScreen extends AbstractScreen {
         mInstructionsTextArea = factory.newComponent(JTextArea.class, Resources.loadText("/appres/texts/instructions.txt"));
         mShowRemainingCheckBox = factory.newComponent(JCheckBox.class, "Show Remaining Files");
         mNightThemeCheckBox = factory.newComponent(JCheckBox.class, "Use night theme");
+        mRandomOrderCheckbox = factory.newComponent(JCheckBox.class, "Show pictures with random order");
     }
 
     private SettingsScreen() {
@@ -54,6 +52,7 @@ public class SettingsScreen extends AbstractScreen {
         InputProperties properties = Configuration.loadProperties("settings.properties");
         mNativeFullscreenCheckBox.setSelected(properties.getBoolean("native_fullscreen", true));
         mShowRemainingCheckBox.setSelected(properties.getBoolean("show_remaining", true));
+        mRandomOrderCheckbox.setSelected(properties.getBoolean("random_order", true));
     }
 
     private void initSwing() {
@@ -69,12 +68,19 @@ public class SettingsScreen extends AbstractScreen {
         addComponentBuilder(new JPanel(), new GridBagConstraints())
                 .setSize(new Dimension(510, 700))
                 .setLayout(new VerticalFlowLayout(5, 5))
-                .addChildren(mNativeFullscreenCheckBox, mShowRemainingCheckBox, mExitButton, scrollPane)
+                .addChildren(mNativeFullscreenCheckBox, mShowRemainingCheckBox, mRandomOrderCheckbox, mExitButton, scrollPane)
                 .setBackground(Color.DARK_GRAY)
                 .build();
 
         // noinspection all : intellij false-possitive
-        mExitButton.addActionListener(new ExitListener());
+        mExitButton.addActionListener(ae -> {
+            Configuration.storeProperties("settings.properties", new OutputProperties()
+                            .put("native_fullscreen", mNativeFullscreenCheckBox.isSelected())
+                            .put("show_remaining", mShowRemainingCheckBox.isSelected())
+                            .put("random_order", mRandomOrderCheckbox.isSelected())
+            );
+            MainScreen.getInstance().visible(true);
+        });
     }
 
     @Override
@@ -90,15 +96,5 @@ public class SettingsScreen extends AbstractScreen {
     @Override
     protected Image icon() {
         return Resources.loadImage("/appres/icons/app_icon_settings.png");
-    }
-
-    private final class ExitListener implements ActionListener {
-        @Override public void actionPerformed(ActionEvent actionEvent) {
-            OutputProperties properties = new OutputProperties();
-            properties.put("native_fullscreen", mNativeFullscreenCheckBox.isSelected());
-            properties.put("show_remaining", mShowRemainingCheckBox.isSelected());
-            Configuration.storeProperties("settings.properties", properties);
-            MainScreen.getInstance().visible(true);
-        }
     }
 }

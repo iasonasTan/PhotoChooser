@@ -1,11 +1,14 @@
 package app.io;
 
+import lib.io.Configuration;
+
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -16,9 +19,11 @@ public final class FileLoader {
 
     public void loadFiles(Path root, List<Path> dest) {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(root)) {
-            for(Path path: stream) {
+            for(Path path: stream)
                 dest.add(path.toAbsolutePath());
-            }
+            if(Configuration.loadProperties("settings.properties")
+                    .getBoolean("random_order", true))
+                Collections.shuffle(dest);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

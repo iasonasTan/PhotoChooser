@@ -1,0 +1,36 @@
+name: Build Jar
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Compile Java
+        run: |
+          cd src
+          javac --class-path "../libs/bin:." app/main/Main.java
+
+      - name: Create JAR
+        run:
+          |
+          find src/ -type f -name *.java -delete
+          jar -cfe Vouli-Game.jar app.main.Main -C src . -C resources .
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: GameJar
+          path: Vouli-Game.jar
