@@ -27,7 +27,10 @@ jobs:
       - name: Compile sources
         run: |
           mkdir out
-          javac -cp "libs/Lib.jar" -d out $(find src -name "*.java")
+          cd out
+          jar -xf ../libs/Lib.jar
+          cd ..
+          javac -cp "out:src" -d out $(find src -name "*.java")
 
       # -----------------------------
       # COPY RESOURCES
