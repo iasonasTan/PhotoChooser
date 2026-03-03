@@ -22,6 +22,10 @@ To exit the application you can:
     1. Press ESC key.
     2. Press E key.
     3. Click 'Exit' button on GUI.
+To undo you can:
+    1. Press U key.
+    2. Press Z key.
+    3. Click 'Undo' gui button.
 
 What the application does:
 The application shows the photos that are inside the directory you give it.

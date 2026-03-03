@@ -1,25 +1,5 @@
 package app.main;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
-import java.awt.FlowLayout;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 import app.io.FileLoader;
 import app.io.ImageHandler;
 import app.util.ImagePathList;
@@ -32,8 +12,17 @@ import lib.gui.style.SimpleStyler;
 import lib.gui.style.Style;
 import lib.gui.style.Styler;
 import lib.io.Configuration;
-import lib.io.InputProperties;
 import lib.io.Resources;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class MainScreen extends AbstractScreen {
     private static MainScreen sInstance = null;
@@ -71,7 +60,8 @@ public class MainScreen extends AbstractScreen {
             mDeleteButton = new JButton("Delete"),
             mSettingsButton = new JButton("Settings"),
             mSkipButton = new JButton("Skip"),
-            mExitButton = new JButton("Exit");
+            mExitButton = new JButton("Exit"),
+            mUndoButton = new JButton("Undo");
 
     private MainScreen(String pathStr, Dimension screenSize) {
         initSwing();
@@ -107,7 +97,7 @@ public class MainScreen extends AbstractScreen {
         setBackground(Color.DARK_GRAY);
 
         JComponent[] comps = {
-                mKeepButton, mDeleteButton, mExitButton, mSkipButton,
+                mKeepButton, mDeleteButton, mExitButton, mSkipButton, mUndoButton,
                 mSettingsButton, mCountLabel
         };
 
@@ -127,6 +117,7 @@ public class MainScreen extends AbstractScreen {
         mSkipButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_SKIP));
         mDeleteButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_DELETE));
         mKeepButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_KEEP));
+        mUndoButton.addActionListener(new FileHandlerListener((FileHandlerListener.ACTION_UNDO)));
         mExitButton.addActionListener(new ExitListener());
         mSettingsButton.addActionListener(new ShowSettingsListener());
 
@@ -170,6 +161,10 @@ public class MainScreen extends AbstractScreen {
                 case KeyEvent.VK_E:
                     mExitButton.doClick();
                     break;
+                case KeyEvent.VK_U:
+                case KeyEvent.VK_Z:
+                    mUndoButton.doClick();
+                    break;
             }
         }
 
@@ -205,6 +200,7 @@ public class MainScreen extends AbstractScreen {
         public static final String ACTION_KEEP   = "Keep";
         public static final String ACTION_DELETE = "Delete";
         public static final String ACTION_SKIP   = "Skip";
+        public static final String ACTION_UNDO   = "Undo";
 
         private final String mAction;
 
@@ -215,8 +211,10 @@ public class MainScreen extends AbstractScreen {
         @Override public void actionPerformed(ActionEvent actionEvent) {
             IO.println("[DEBUG] "+mAction+" image");
             switch(mAction) {
-                case ACTION_KEEP -> mImageHandler.keep();
-                case ACTION_DELETE -> mImageHandler.delete();
+                case ACTION_KEEP -> mImageHandler.move(ImageHandler.Destination.KEEP);
+                case ACTION_DELETE -> mImageHandler.move(ImageHandler.Destination.TRASH);
+                case ACTION_UNDO -> mImageHandler.undo();
+                case ACTION_SKIP -> {}
             }
             nextImage();
         }

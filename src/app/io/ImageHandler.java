@@ -28,6 +28,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
     private final ImageScaler mImageScaler     = new ImageScaler();
     private final Iterator<Path> mFilePathsIterator;
 
+    private Destination mLastDestination = Destination.NONE;
     private Path mLastReturnedImagePath;
     private final Path mRootPath;
     private boolean mClosed = false;
@@ -46,7 +47,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
         preloadImage();
     }
 
-    public ImageData nextImageData() {
+    public synchronized ImageData nextImageData() {
         try {
         	System.out.println("[DEBUG] Returning pre-loaded image.");
             long startTime = System.currentTimeMillis();
@@ -71,6 +72,31 @@ public class ImageHandler implements AutoCloseable, Closeable {
         }
     }
 
+    public synchronized void move(Destination destination) {
+        IO.println("Moving picture to "+destination.name());
+        if(mClosed)
+            throw new IllegalStateException("ImageHandler is closed.");
+        if(mLoadedImagePath==null)
+            throw new IllegalStateException("No image is selected");
+        mLastDestination = destination;
+        switch (destination) {
+            case NONE  -> {}
+            case KEEP  -> mFilesToKeep.add(mLastReturnedImagePath);
+            case TRASH -> mFilesToDelete.add(mLastReturnedImagePath);
+        }
+    }
+
+    public synchronized void undo() {
+        IO.println("Undoing last action.");
+        List<Path> list = switch (mLastDestination) {
+            case Destination.TRASH -> mFilesToDelete;
+            case Destination.KEEP -> mFilesToKeep;
+            default -> null;
+        };
+        if(list!=null&&!list.isEmpty())
+            list.removeLast();
+    }
+
     @Override
     public void close() throws IOException {
         if(mRootPath==null)
@@ -87,7 +113,7 @@ public class ImageHandler implements AutoCloseable, Closeable {
 
     private BufferedImage nextImage() {
         if(mFilePathsIterator ==null||!mFilePathsIterator.hasNext()) {
-        	System.out.println("[DEBUG] No more images.");
+            System.out.println("[DEBUG] No more images.");
             return null;
         }
         mRemainingPictures--;
@@ -123,27 +149,16 @@ public class ImageHandler implements AutoCloseable, Closeable {
         }).start();
     }
 
-    private void check() {
-        if(mClosed)
-            throw new IllegalStateException("ImageHandler is closed.");
-        if(mLoadedImagePath==null)
-            throw new IllegalStateException("No image is selected");
-    }
-
-    public void keep() {
-        check();
-        mFilesToKeep.add(mLastReturnedImagePath);
-    }
-
-    public void delete() {
-        check();
-        mFilesToDelete.add(mLastReturnedImagePath);
-    }
-
     public int getRemaining() {
         return mRemainingPictures;
     }
 
     public record ImageData(Icon image, Path path) {
+    }
+
+    public enum Destination {
+        NONE,
+        TRASH,
+        KEEP
     }
 }

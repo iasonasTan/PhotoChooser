@@ -1,0 +1,98 @@
+name: Build and Release PhotoChooser
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # -----------------------------
+      # COMPILE
+      # -----------------------------
+      - name: Compile sources
+        run: |
+          mkdir out
+          javac -cp "libs/Lib.jar" -d out $(find src -name "*.java")
+
+      # -----------------------------
+      # COPY RESOURCES
+      # -----------------------------
+      - name: Copy resources
+        run: |
+          cp -r resources/* out/
+
+      # -----------------------------
+      # CREATE JAR
+      # -----------------------------
+      - name: Create JAR
+        run: |
+          jar --create \
+              --file PhotoChooser.jar \
+              --main-class app.main.Main \
+              -C out .
+
+      # -----------------------------
+      # WINDOWS EXE
+      # -----------------------------
+      - name: Create Windows EXE
+        if: matrix.os == 'windows-latest'
+        run: |
+          jpackage ^
+            --type exe ^
+            --name PhotoChooser ^
+            --input . ^
+            --main-jar PhotoChooser.jar ^
+            --class-path "PhotoChooser.jar;libs/Lib.jar"
+
+      # -----------------------------
+      # LINUX DEB
+      # -----------------------------
+      - name: Create DEB
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          jpackage \
+            --type deb \
+            --name photochooser \
+            --input . \
+            --main-jar PhotoChooser.jar \
+            --class-path "PhotoChooser.jar:libs/Lib.jar"
+
+      # -----------------------------
+      # LINUX APP IMAGE (portable)
+      # -----------------------------
+      - name: Create AppImage
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          jpackage \
+            --type app-image \
+            --name photochooser \
+            --input . \
+            --main-jar PhotoChooser.jar \
+            --class-path "PhotoChooser.jar:libs/Lib.jar"
+
+      # -----------------------------
+      # UPLOAD RELEASE ASSETS
+      # -----------------------------
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            PhotoChooser.jar
+            *.exe
+            *.deb
+            photochooser/**
