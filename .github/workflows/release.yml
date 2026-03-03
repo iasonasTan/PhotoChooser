@@ -15,26 +15,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup JDK
+      # -----------------------------
+      # SETUP JAVA 25
+      # -----------------------------
+      - name: Setup JDK 25
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: 25
 
       # -----------------------------
       # COMPILE
       # -----------------------------
       - name: Compile sources
+        shell: bash
         run: |
           mkdir out
-          cd out
-          jar -xf ../libs/Lib.jar
-          cd ..
-          javac -cp "out:src" -d out $(find src -name "*.java")
+          find src -name "*.java" > sources.txt
+          javac -cp "libs/Lib.jar" -d out @sources.txt
 
       # -----------------------------
       # COPY RESOURCES
       # -----------------------------
       - name: Copy resources
+        shell: bash
         run: |
           cp -r resources/* out/
 
