@@ -2,15 +2,14 @@ package app.main;
 
 import app.io.FileLoader;
 import app.io.ImageHandler;
+import app.ui.AppAbstractScreen;
+import app.ui.Colors;
 import app.util.ImagePathList;
 import lib.AlreadyInitializedException;
 import lib.NotInitializedException;
 import lib.gui.AbstractScreen;
 import lib.gui.layout.VerticalFlowLayout;
-import lib.gui.style.SimpleStyleLoader;
-import lib.gui.style.SimpleStyler;
-import lib.gui.style.Style;
-import lib.gui.style.Styler;
+import lib.gui.style.*;
 import lib.io.Configuration;
 import lib.io.Resources;
 
@@ -24,7 +23,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class MainScreen extends AbstractScreen {
+public class MainScreen extends AppAbstractScreen {
     private static MainScreen sInstance = null;
 
     public static MainScreen getInstance() {
@@ -52,20 +51,13 @@ public class MainScreen extends AbstractScreen {
     // logic
     private final ImageHandler mImageHandler;
     private int mCount = 0;
+    private ImageHandler.ImageData mImageData;
 
     // gui
-    private final JLabel mLabel = new JLabel(),
-            mCountLabel=new JLabel();
-    private final JButton mKeepButton = new JButton("Keep"),
-            mDeleteButton = new JButton("Delete"),
-            mSettingsButton = new JButton("Settings"),
-            mSkipButton = new JButton("Skip"),
-            mExitButton = new JButton("Exit"),
-            mUndoButton = new JButton("Undo");
+    private JLabel mImageLabel, mCountLabel;
+    private JButton mKeepButton, mDeleteButton, mSkipButton, mExitButton, mUndoButton;
 
     private MainScreen(String pathStr, Dimension screenSize) {
-        initSwing();
-
         Path rootPath = Paths.get(pathStr);
         var imagesList = new ImagePathList();
         FileLoader.instance.loadFiles(rootPath, imagesList);
@@ -73,8 +65,6 @@ public class MainScreen extends AbstractScreen {
         int controlComponentsWidth = 200;
         int imageSize = Math.min(screenSize.width-controlComponentsWidth, screenSize.height);
         mImageHandler = ImageHandler.newInstance(rootPath, imagesList, imageSize);
-
-        nextImage();
     }
 
     @Override
@@ -92,42 +82,64 @@ public class MainScreen extends AbstractScreen {
         return Resources.loadImage("/appres/icons/app_icon.png");
     }
 
-    private void initSwing() {
+    @Override
+    protected void initSwing() {
+        boolean nightTheme = Configuration
+                .loadProperties("settings.properties")
+                .getBoolean("night_theme", false);
+        IO.println("Dark Theme: "+nightTheme);
+        String styleFileName = nightTheme ? "settings-night.style" : "settings.style";
+        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/"+styleFileName);
+        Styler styler = new SimpleStyler(style);
+        ComponentFactory factory = new ComponentFactory(styler);
+        mCountLabel = factory.newComponent(JLabel.class);
+        mKeepButton = factory.newComponent(JButton.class, "Keep");
+        mDeleteButton = factory.newComponent(JButton.class, "Delete");
+        mSkipButton = factory.newComponent(JButton.class, "Skip");
+        mExitButton = factory.newComponent(JButton.class, "Exit");
+        mUndoButton = factory.newComponent(JButton.class, "Undo");
+        mImageLabel = new JLabel();
+        JButton settingsButton = factory.newComponent(JButton.class, "Settings");
+
         setLayout(new FlowLayout());
-        setBackground(Color.DARK_GRAY);
+        setBackground(Colors.getColor().background());
 
         JComponent[] comps = {
                 mKeepButton, mDeleteButton, mExitButton, mSkipButton, mUndoButton,
-                mSettingsButton, mCountLabel
+                settingsButton, mCountLabel
         };
-
-        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/gui.style");
-        Styler styler = new SimpleStyler(style);
-        styler.styleComponents(comps);
 
         addComponentBuilder(new JPanel(), null)
                 .setSize(new Dimension(190, 500))
                 .setLayout(new VerticalFlowLayout(10, 10))
-                .setBackground(Color.DARK_GRAY)
+                .setBackground(Colors.getColor().background())
                 .addChildren(comps)
                 .build();
 
-        add(mLabel);
+        add(mImageLabel);
 
-        mSkipButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_SKIP));
         mDeleteButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_DELETE));
+        mSkipButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_SKIP));
         mKeepButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_KEEP));
-        mUndoButton.addActionListener(new FileHandlerListener((FileHandlerListener.ACTION_UNDO)));
+        mUndoButton.addActionListener(new FileHandlerListener(FileHandlerListener.ACTION_UNDO));
+        settingsButton.addActionListener(new ShowSettingsListener());
         mExitButton.addActionListener(new ExitListener());
-        mSettingsButton.addActionListener(new ShowSettingsListener());
 
         setFocusable(true);
         addKeyListener(new ActionKeyListener());
         requestFocus();
+
+        if(!isCreated()) {
+            nextImage();
+        } else {
+            mImageLabel.setIcon(mImageData.image());
+        }
+        mCountLabel.setText("Shown Images: "+mCount);
     }
 
+    @SuppressWarnings("all") // Intellij false-possitive
     private void nextImage() {
-        ImageHandler.ImageData mImageData = mImageHandler.nextImageData();
+        mImageData = mImageHandler.nextImageData();
         if(mImageData==null) {
             JOptionPane.showMessageDialog(this, "No more images.");
             mExitButton.doClick();
@@ -135,7 +147,7 @@ public class MainScreen extends AbstractScreen {
             mCount++;
             mCountLabel.setText("Shown Images: "+mCount);
             System.out.printf("%s exists: %B\n", mImageData.path(), mImageData.image()==null);
-            mLabel.setIcon(mImageData.image());
+            mImageLabel.setIcon(mImageData.image());
         }
     }
 
@@ -216,7 +228,8 @@ public class MainScreen extends AbstractScreen {
                 case ACTION_UNDO -> mImageHandler.undo();
                 case ACTION_SKIP -> {}
             }
-            nextImage();
+            if(!ACTION_UNDO.equals(mAction))
+                nextImage();
         }
     }
 }

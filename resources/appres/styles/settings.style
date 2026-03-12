@@ -5,5 +5,5 @@ focusable=true
 size=500x30
 alignment=left
 
-background=80,80,80
-foreground=255,255,255
+background=220,220,220
+foreground=25,25,25

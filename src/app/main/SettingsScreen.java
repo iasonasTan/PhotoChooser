@@ -1,7 +1,8 @@
 package app.main;
 
+import app.ui.AppAbstractScreen;
+import app.ui.Colors;
 import lib.AlreadyInitializedException;
-import lib.gui.AbstractScreen;
 import lib.gui.layout.VerticalFlowLayout;
 import lib.gui.style.*;
 import lib.io.Configuration;
@@ -12,7 +13,7 @@ import lib.io.Resources;
 import javax.swing.*;
 import java.awt.*;
 
-public class SettingsScreen extends AbstractScreen {
+public class SettingsScreen extends AppAbstractScreen {
     private static SettingsScreen sInstance;
 
     public static SettingsScreen getInstance() {
@@ -25,62 +26,72 @@ public class SettingsScreen extends AbstractScreen {
         sInstance = new SettingsScreen();
     }
 
-    private final JButton mExitButton;
-    private final JCheckBox mNativeFullscreenCheckBox, mShowRemainingCheckBox, mNightThemeCheckBox, mRandomOrderCheckbox;
-    private final JTextArea mInstructionsTextArea;
+    private JCheckBox mNativeFullscreenCheckBox, mShowRemainingCheckBox, mNightThemeCheckBox, mRandomOrderCheckbox;
 
-    /* Initialize GUI components */
-    {
-        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/settings.style");
-        Styler styler = new SimpleStyler(style);
-        ComponentFactory factory = new ComponentFactory(styler);
-        mExitButton = factory.newComponent(JButton.class, "Save & Exit");
-        mNativeFullscreenCheckBox = factory.newComponent(JCheckBox.class, "Native Fullscreen");
-        mInstructionsTextArea = factory.newComponent(JTextArea.class, Resources.loadText("/appres/texts/instructions.txt"));
-        mShowRemainingCheckBox = factory.newComponent(JCheckBox.class, "Show Remaining Files");
-        mNightThemeCheckBox = factory.newComponent(JCheckBox.class, "Use night theme");
-        mRandomOrderCheckbox = factory.newComponent(JCheckBox.class, "Show pictures with random order");
-    }
-
-    private SettingsScreen() {
-        initSwing();
-        loadSettings();
-    }
-
-    @SuppressWarnings("all") // intellij false-possitive
     private void loadSettings() {
         InputProperties properties = Configuration.loadProperties("settings.properties");
         mNativeFullscreenCheckBox.setSelected(properties.getBoolean("native_fullscreen", true));
         mShowRemainingCheckBox.setSelected(properties.getBoolean("show_remaining", true));
         mRandomOrderCheckbox.setSelected(properties.getBoolean("random_order", true));
+        mNightThemeCheckBox.setSelected(properties.getBoolean("night_theme", false));
     }
 
-    private void initSwing() {
+    @Override
+    protected void initSwing() {
+        boolean nightTheme = Configuration
+                .loadProperties("settings.properties")
+                .getBoolean("night_theme", false);
+        IO.println("Dark Theme: "+nightTheme);
+        String styleFileName = nightTheme ? "settings-night.style" : "settings.style";
+        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/"+styleFileName);
+        Styler styler = new SimpleStyler(style);
+        ComponentFactory factory = new ComponentFactory(styler);
+        mNativeFullscreenCheckBox = factory.newComponent(JCheckBox.class, "Native Fullscreen");
+        mShowRemainingCheckBox = factory.newComponent(JCheckBox.class, "Show Remaining Files");
+        mNightThemeCheckBox = factory.newComponent(JCheckBox.class, "Night theme");
+        mRandomOrderCheckbox = factory.newComponent(JCheckBox.class, "Show pictures with random order");
+        JButton exitButton = factory.newComponent(JButton.class, "Save & Exit");
+        JTextArea instructionsTextArea = factory.newComponent(JTextArea.class, Resources.loadText("/appres/texts/instructions.txt"));
+        JButton setGoalButton = factory.newComponent(JButton.class, "Set Goal");
+
         setLayout(new GridBagLayout());
-        setBackground(Color.GRAY);
+        setBackground(Colors.getColor().background());
 
         // noinspection all : intellij false-possitive
-        mInstructionsTextArea.setPreferredSize(new Dimension(1000, 1000));
-        mInstructionsTextArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(mInstructionsTextArea);
+        instructionsTextArea.setPreferredSize(new Dimension(1000, 1000));
+        instructionsTextArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(instructionsTextArea);
         scrollPane.setPreferredSize(new Dimension(500, 400));
+
+        JComponent[] children = {
+                mNativeFullscreenCheckBox,
+                mShowRemainingCheckBox,
+                mRandomOrderCheckbox,
+                mNightThemeCheckBox,
+                setGoalButton,
+                exitButton,
+                scrollPane
+        };
 
         addComponentBuilder(new JPanel(), new GridBagConstraints())
                 .setSize(new Dimension(510, 700))
                 .setLayout(new VerticalFlowLayout(5, 5))
-                .addChildren(mNativeFullscreenCheckBox, mShowRemainingCheckBox, mRandomOrderCheckbox, mExitButton, scrollPane)
-                .setBackground(Color.DARK_GRAY)
+                .addChildren(children)
+                .setBackground(Colors.getColor().background())
                 .build();
 
-        // noinspection all : intellij false-possitive
-        mExitButton.addActionListener(ae -> {
-            Configuration.storeProperties("settings.properties", new OutputProperties()
-                            .put("native_fullscreen", mNativeFullscreenCheckBox.isSelected())
-                            .put("show_remaining", mShowRemainingCheckBox.isSelected())
-                            .put("random_order", mRandomOrderCheckbox.isSelected())
-            );
+        exitButton.addActionListener(_ -> {
+            OutputProperties properties = new OutputProperties()
+                    .put("native_fullscreen", mNativeFullscreenCheckBox.isSelected())
+                    .put("show_remaining", mShowRemainingCheckBox.isSelected())
+                    .put("random_order", mRandomOrderCheckbox.isSelected())
+                    .put("night_theme", mNightThemeCheckBox.isSelected());
+            Configuration.storeProperties("settings.properties", properties);
+            Colors.load(mNightThemeCheckBox.isSelected());
             MainScreen.getInstance().visible(true);
         });
+
+        loadSettings();
     }
 
     @Override
@@ -89,12 +100,12 @@ public class SettingsScreen extends AbstractScreen {
     }
 
     @Override
-    protected Image background() {
-        return null;
+    protected Image icon() {
+        return Resources.loadImage("/appres/icons/app_icon_settings.png");
     }
 
     @Override
-    protected Image icon() {
-        return Resources.loadImage("/appres/icons/app_icon_settings.png");
+    protected Image background() {
+        return null; // No background image
     }
 }
