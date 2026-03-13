@@ -17,7 +17,7 @@ After you press 'Exit', pictures you marked as trash will be moved to a folder c
 and the pictures you didn't mark as trash will be moved to a folder called '\_\_keep\_\_'
 
 ## How can I run it?
-You can just download the JAR of the latest release but it's also possible to download the source code,
+You can just download the JAR of the latest release, but it's also possible to download the source code,
 compile it and run it.
 The app uses a library called 'Lib.jar' that's developed by me.
 You can see the library's source code at [GitHub Repository](https://github.com/iasonasTan/JavaLib/)

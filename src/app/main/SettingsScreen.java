@@ -2,6 +2,7 @@ package app.main;
 
 import app.ui.AppAbstractScreen;
 import app.ui.Colors;
+import app.ui.StyleManager;
 import lib.AlreadyInitializedException;
 import lib.gui.layout.VerticalFlowLayout;
 import lib.gui.style.*;
@@ -15,6 +16,18 @@ import java.awt.*;
 
 public class SettingsScreen extends AppAbstractScreen {
     private static SettingsScreen sInstance;
+
+    /*
+    Bad-Logic.
+    This static variable is here because of library limitations.
+    Best solution:
+    Load properties from class GoalScreen and just put this variable in there.
+    Problem:
+    Library doesn't allow it.
+    Library update is necessary to remove this logic.
+    It is also possible to store this in a different configuration file.
+     */
+    static int sGoal;
 
     public static SettingsScreen getInstance() {
         return sInstance;
@@ -34,25 +47,23 @@ public class SettingsScreen extends AppAbstractScreen {
         mShowRemainingCheckBox.setSelected(properties.getBoolean("show_remaining", true));
         mRandomOrderCheckbox.setSelected(properties.getBoolean("random_order", true));
         mNightThemeCheckBox.setSelected(properties.getBoolean("night_theme", false));
+        sGoal = properties.getInteger("goal", 5);
     }
 
     @Override
     protected void initSwing() {
-        boolean nightTheme = Configuration
-                .loadProperties("settings.properties")
-                .getBoolean("night_theme", false);
-        IO.println("Dark Theme: "+nightTheme);
-        String styleFileName = nightTheme ? "settings-night.style" : "settings.style";
-        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/"+styleFileName);
-        Styler styler = new SimpleStyler(style);
+        Styler styler = new SimpleStyler(StyleManager.getStyle(StyleManager.STYLE_SETTINGS));
         ComponentFactory factory = new ComponentFactory(styler);
         mNativeFullscreenCheckBox = factory.newComponent(JCheckBox.class, "Native Fullscreen");
         mShowRemainingCheckBox = factory.newComponent(JCheckBox.class, "Show Remaining Files");
         mNightThemeCheckBox = factory.newComponent(JCheckBox.class, "Night theme");
         mRandomOrderCheckbox = factory.newComponent(JCheckBox.class, "Show pictures with random order");
         JButton exitButton = factory.newComponent(JButton.class, "Save & Exit");
-        JTextArea instructionsTextArea = factory.newComponent(JTextArea.class, Resources.loadText("/appres/texts/instructions.txt"));
         JButton setGoalButton = factory.newComponent(JButton.class, "Set Goal");
+        JTextArea instructionsTextArea = factory.newComponent(
+                JTextArea.class,
+                Resources.loadText("/appres/texts/instructions.txt")
+        );
 
         setLayout(new GridBagLayout());
         setBackground(Colors.getColor().background());
@@ -81,15 +92,19 @@ public class SettingsScreen extends AppAbstractScreen {
                 .build();
 
         exitButton.addActionListener(_ -> {
+            IO.println("Storing goal: "+sGoal);
             OutputProperties properties = new OutputProperties()
                     .put("native_fullscreen", mNativeFullscreenCheckBox.isSelected())
                     .put("show_remaining", mShowRemainingCheckBox.isSelected())
                     .put("random_order", mRandomOrderCheckbox.isSelected())
-                    .put("night_theme", mNightThemeCheckBox.isSelected());
+                    .put("night_theme", mNightThemeCheckBox.isSelected())
+                    .put("goal", sGoal);
             Configuration.storeProperties("settings.properties", properties);
             Colors.load(mNightThemeCheckBox.isSelected());
             MainScreen.getInstance().visible(true);
         });
+
+        setGoalButton.addActionListener(_ -> GoalScreen.getInstance().visible(true));
 
         loadSettings();
     }

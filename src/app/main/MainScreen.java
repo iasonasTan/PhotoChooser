@@ -4,6 +4,7 @@ import app.io.FileLoader;
 import app.io.ImageHandler;
 import app.ui.AppAbstractScreen;
 import app.ui.Colors;
+import app.ui.StyleManager;
 import app.util.ImagePathList;
 import lib.AlreadyInitializedException;
 import lib.NotInitializedException;
@@ -50,11 +51,12 @@ public class MainScreen extends AppAbstractScreen {
 
     // logic
     private final ImageHandler mImageHandler;
-    private int mCount = 0;
+    private int mCount = 0, mGoal;
     private ImageHandler.ImageData mImageData;
 
     // gui
-    private JLabel mImageLabel, mCountLabel;
+    private JLabel mImageLabel;
+    private JLabel mCountLabel;
     private JButton mKeepButton, mDeleteButton, mSkipButton, mExitButton, mUndoButton;
 
     private MainScreen(String pathStr, Dimension screenSize) {
@@ -84,13 +86,7 @@ public class MainScreen extends AppAbstractScreen {
 
     @Override
     protected void initSwing() {
-        boolean nightTheme = Configuration
-                .loadProperties("settings.properties")
-                .getBoolean("night_theme", false);
-        IO.println("Dark Theme: "+nightTheme);
-        String styleFileName = nightTheme ? "settings-night.style" : "settings.style";
-        Style style = SimpleStyleLoader.instance.loadStyle("/appres/styles/"+styleFileName);
-        Styler styler = new SimpleStyler(style);
+        Styler styler = new SimpleStyler(StyleManager.getStyle(StyleManager.STYLE_GUI));
         ComponentFactory factory = new ComponentFactory(styler);
         mCountLabel = factory.newComponent(JLabel.class);
         mKeepButton = factory.newComponent(JButton.class, "Keep");
@@ -100,13 +96,14 @@ public class MainScreen extends AppAbstractScreen {
         mUndoButton = factory.newComponent(JButton.class, "Undo");
         mImageLabel = new JLabel();
         JButton settingsButton = factory.newComponent(JButton.class, "Settings");
+        JLabel goalLabel = factory.newComponent(JLabel.class, "No Goal");
 
         setLayout(new FlowLayout());
         setBackground(Colors.getColor().background());
 
         JComponent[] comps = {
                 mKeepButton, mDeleteButton, mExitButton, mSkipButton, mUndoButton,
-                settingsButton, mCountLabel
+                settingsButton, mCountLabel, goalLabel
         };
 
         addComponentBuilder(new JPanel(), null)
@@ -135,6 +132,11 @@ public class MainScreen extends AppAbstractScreen {
             mImageLabel.setIcon(mImageData.image());
         }
         mCountLabel.setText("Shown Images: "+mCount);
+
+        mGoal = Configuration.loadProperties("settings.properties")
+                        .getInteger("goal", -1);
+        if(mGoal != -1)
+            goalLabel.setText("Goal: "+mGoal);
     }
 
     @SuppressWarnings("all") // Intellij false-possitive
@@ -148,6 +150,10 @@ public class MainScreen extends AppAbstractScreen {
             mCountLabel.setText("Shown Images: "+mCount);
             System.out.printf("%s exists: %B\n", mImageData.path(), mImageData.image()==null);
             mImageLabel.setIcon(mImageData.image());
+            if(mGoal > 0 && mCount > mGoal) {
+                JOptionPane.showMessageDialog(this, "Goal of "+mGoal+" pictures is complete!");
+                mGoal = -1;
+            }
         }
     }
 

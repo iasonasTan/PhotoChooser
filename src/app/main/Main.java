@@ -15,6 +15,7 @@ public class Main {
                 .getBoolean("night_theme", false);
         Colors.load(nightTheme);
         SettingsScreen.init();
+        GoalScreen.init();
 
         if(args.length == 0)
             MainScreen.fromChooser();
