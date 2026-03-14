@@ -206,7 +206,11 @@ public class MainScreen extends AppAbstractScreen {
             }
             IO.println("All files are moved.");
             AbstractScreen.dispose();
-            if(Configuration.loadProperties("settings.properties").getBoolean("showRemaining", true)) {
+
+            boolean showStatusOnExit = Configuration
+                    .loadProperties("settings.properties")
+                    .getBoolean("show_remaining", true);
+            if(showStatusOnExit) {
                 JOptionPane.showMessageDialog(MainScreen.this, Resources.loadText("/appres/texts/exit_message.txt"));
                 JOptionPane.showMessageDialog(MainScreen.this, "Remaining Files: "+mImageHandler.getRemaining());
             }
