@@ -153,6 +153,12 @@ public class MainScreen extends AppAbstractScreen {
             if(mGoal > 0 && mCount > mGoal) {
                 JOptionPane.showMessageDialog(this, "Goal of "+mGoal+" pictures is complete!");
                 mGoal = -1;
+                boolean autoCloseApp = Configuration
+                        .loadProperties("settings.properties")
+                        .getBoolean("auto_close_app", false);
+                if(autoCloseApp) {
+                    mExitButton.doClick();
+                }
             }
         }
     }

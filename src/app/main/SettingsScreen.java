@@ -19,15 +19,16 @@ public class SettingsScreen extends AppAbstractScreen {
 
     /*
     Bad-Logic.
-    This static variable is here because of library limitations.
+    These static variables are here because of library limitations.
     Best solution:
-    Load properties from class GoalScreen and just put this variable in there.
+    Load properties from class GoalScreen and just put these variables in there.
     Problem:
     Library doesn't allow it.
     Library update is necessary to remove this logic.
     It is also possible to store this in a different configuration file.
      */
     static int sGoal;
+    static boolean sAutoClose;
 
     public static SettingsScreen getInstance() {
         return sInstance;
@@ -98,6 +99,7 @@ public class SettingsScreen extends AppAbstractScreen {
                     .put("show_remaining", mShowRemainingCheckBox.isSelected())
                     .put("random_order", mRandomOrderCheckbox.isSelected())
                     .put("night_theme", mNightThemeCheckBox.isSelected())
+                    .put("auto_close_app", sAutoClose)
                     .put("goal", sGoal);
             Configuration.storeProperties("settings.properties", properties);
             Colors.load(mNightThemeCheckBox.isSelected());

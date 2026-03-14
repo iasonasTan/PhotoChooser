@@ -32,6 +32,7 @@ public class GoalScreen extends AppAbstractScreen {
     }
 
     private JTextField mCountField;
+    private JCheckBox mAutoCloseCheckbox;
 
     @Override
     protected void initSwing() {
@@ -40,6 +41,7 @@ public class GoalScreen extends AppAbstractScreen {
         ComponentFactory factory = new ComponentFactory(styler);
         JButton setAndExitButton = factory.newComponent(JButton.class, "Done");
         JButton resetButton = factory.newComponent(JButton.class, "Reset and Exit");
+        mAutoCloseCheckbox = factory.newComponent(JCheckBox.class, "Close app after goal is reached");
         mCountField= factory.newComponent(JTextField.class);
 
         setLayout(new GridBagLayout());
@@ -47,6 +49,7 @@ public class GoalScreen extends AppAbstractScreen {
 
         JComponent[] children = {
                 mCountField,
+                mAutoCloseCheckbox,
                 setAndExitButton,
                 resetButton
         };
@@ -67,6 +70,7 @@ public class GoalScreen extends AppAbstractScreen {
     private void loadSettings() {
         InputProperties properties = Configuration.loadProperties("settings.properties");
         mCountField.setText(String.valueOf(properties.getInteger("goal", 5)));
+        mAutoCloseCheckbox.setSelected(properties.getBoolean("auto_close_app", false));
     }
 
     private int getTypedGoal() {
@@ -99,6 +103,7 @@ public class GoalScreen extends AppAbstractScreen {
                 SettingsScreen.getInstance().visible(true);
             }
             SettingsScreen.sGoal = mAction.contains(ACTION_RESET) ? -1 : getTypedGoal();
+            SettingsScreen.sAutoClose = mAutoCloseCheckbox.isSelected();
             IO.println("Goal: "+SettingsScreen.sGoal);
         }
     }
