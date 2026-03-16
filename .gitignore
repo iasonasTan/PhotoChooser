@@ -26,4 +26,10 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store
+.DS_Storezips
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
