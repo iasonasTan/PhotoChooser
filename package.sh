@@ -20,4 +20,10 @@ jpackage --input . \
     --main-class app.main.Main \
     --type app-image
 
+echo "Zipping output..."
+zip -r PhotoChooser.zip PhotoChooser/ >> /dev/null
+
+echo "Removing trash directories..."
+rm -rf PhotoChooser
+
 echo "Done!"
