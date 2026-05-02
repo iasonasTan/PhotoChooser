@@ -19,13 +19,16 @@ public final class FileLoader {
 
     public void loadFiles(Path root, List<Path> dest) {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(root)) {
-            for(Path path: stream)
+            for(Path path: stream) {
                 dest.add(path.toAbsolutePath());
+            }
             if(Configuration.loadProperties("settings.properties")
-                    .getBoolean("random_order", true))
+                    .getBoolean("random_order", true)) {
                 Collections.shuffle(dest);
+            }
+            IO.println("[DEBUG] Loaded "+dest.size()+" files.");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            IO.println("[ERROR] Failed to load files.");
         }
     }
 

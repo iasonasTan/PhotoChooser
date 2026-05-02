@@ -128,8 +128,9 @@ public class ImageHandler implements AutoCloseable, Closeable {
         } catch (IOException | NoSuchElementException e) {
             System.err.println("\u001B[31m[ERROR] Something went wrong while trying to load image. "+e.getMessage()+"\u001B[0m");
             UI.showException(e);
-            throw new RuntimeException(e);
+            //throw new RuntimeException(e);
         }
+        return null;
     }
 
     private void preloadImage() {
@@ -138,7 +139,6 @@ public class ImageHandler implements AutoCloseable, Closeable {
         new Thread(() -> {
             long startTime = System.currentTimeMillis();
             System.out.println("[DEBUG] Loading and scaling started at "+startTime);
-
             BufferedImage image = nextImage();
             mLoadedImage = mImageScaler.scaleImage(image);
 
