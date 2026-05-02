@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class ImageHandler implements AutoCloseable, Closeable {
+    @SuppressWarnings("unused")
     public static ImageHandler newInstance(Path rootPath, java.util.List<Path> paths) {
         return new ImageHandler(rootPath, paths, -1);
     }
@@ -120,17 +121,19 @@ public class ImageHandler implements AutoCloseable, Closeable {
         try {
             BufferedImage out;
             do {
+                if(!mFilePathsIterator.hasNext()) {
+                    return null;
+                }
                 mLoadedImagePath = mFilePathsIterator.next();
                 System.out.println("[DEBUG] Loading file " + mLoadedImagePath.toAbsolutePath());
                 out = ImageIO.read(mLoadedImagePath.toUri().toURL());
             } while(out == null);
             return out;
         } catch (IOException | NoSuchElementException e) {
-            System.err.println("\u001B[31m[ERROR] Something went wrong while trying to load image. "+e.getMessage()+"\u001B[0m");
+            System.err.println("\u001B[31m[ERROR] Something went wrong while trying to load image. "+e.getClass().getSimpleName()+":"+e.getMessage()+"\u001B[0m");
             UI.showException(e);
-            //throw new RuntimeException(e);
+            return null;
         }
-        return null;
     }
 
     private void preloadImage() {
